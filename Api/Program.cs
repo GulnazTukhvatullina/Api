@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Net;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -32,8 +34,23 @@ namespace Api
             var title = Console.ReadLine();
             var url = $"https://favqs.com/api/qotd";
 
+            var request = WebRequest.Create(url);
 
-            Console.WriteLine("Hello World!");
+            var response = request.GetResponse();
+            var httpStatusCode = (response as HttpWebResponse).StatusCode;
+
+            if (httpStatusCode != HttpStatusCode.OK)
+            {
+                Console.WriteLine(httpStatusCode);
+                return;
+            }
+
+            using (var streamReader = new StreamReader(response.GetResponseStream()))
+            {
+                string result = streamReader.ReadToEnd();
+                var temp = JsonConvert.DeserializeObject<Root>(result);
+                Console.WriteLine(temp.quote.body);
+            }
         }
     }
 }
